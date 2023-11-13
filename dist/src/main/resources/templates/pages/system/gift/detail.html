@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin Loại quà tặng</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-content">
+    <!--begin::Entry-->
+    <div class="d-flex flex-column-fluid">
+        <!--begin::Container-->
+        <div class="card-header-border"></div>
+        <div class="card card-custom example example-compact w-100" style="margin-right: 16px">
+            <!-- custom.breadcrumbs -->
+            <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 h5">
+                <li class="breadcrumb-item">
+                    <a class="text-dark" th:href="@{/}">
+                        <span class="txt">Trang chủ</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item text-muted breadcrumbs-item--active">
+                    <a class="text-dark-50" th:href="@{/gift}">
+                        <span class="txt">Quản lý Loại quà tặng</span>
+                    </a>
+                </li>
+            </ul>
+            <!-- end custom.breadcrumbs -->
+            <!--begin::Dashboard-->
+            <div class="card-header">
+                <div class="row row-16 align-items-center flex-grow-1">
+                    <div class="col">
+                        <div class="card-title">Thông tin chung</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-content sub-page">
+                    <div class="card-section mb-20">
+                        <div class="row">
+                            <form id="form-create" th:object="${giftForm}" method="post" class="col-12">
+                                <input type="hidden" th:value="${giftForm.id}">
+                                <div class="col-12 col-md-12">
+                                    <div class="row list-mb16 list-crop">
+                                        <div class="offset-xl-1 col-xl-5 col-sm-6 list-mb24 list-crop">
+                                            <div class="form-group">
+                                                <label>
+                                                    Mã Loại Game <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" th:field="*{id}" class="form-control" disabled/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>
+                                                    Tên Loại Game <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" th:field="*{name}" class="form-control" disabled/>
+                                            </div>
+                                        </div>
+                                        <div class="offset-xl-1 col-xl-5 col-sm-6 list-mb24 list-crop">
+                                            <div class="form-group">
+                                                <label>
+                                                    Trạng thái <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" th:field="*{status}" class="form-control" disabled/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>
+                                                    Đường dẫn <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" th:field="*{url}" class="form-control" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row row-16 justify-content-end">
+                        <div class="col-auto">
+                            <a class="btn btn-secondary" th:href="@{/user}">
+                                Quay lại
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Dashboard-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::Entry-->
+</th:block>
+
+<th:block layout:fragment="js-on-this-page">
+    <script th:src="@{/js/system/gift/gift.js}"></script>
+</th:block>
+</body>
+</html>

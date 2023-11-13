@@ -1,0 +1,55 @@
+1. Java: Thêm hằng số:
+- class: vnpay.game.common.ResCode
+- line:
+GIFT_ALREADY_EXISTS("107", "Loại quà tặng đã tồn tại, vui lòng kiểm tra lại"),
+GIFT_NOT_EXISTS("108", "Loại quà tặng không tồn tại, vui lòng kiểm tra lại")
+
+2. Menu
+- file: resources/common/fragment
+- content:
+<li th:class="'menu-item center ' + ${#strings.contains(#httpServletRequest.requestURI,'/gift')? 'menu-item-active' : ''}"
+	sec:authorize="hasAuthority('SUB_GIFT')">
+	<a th:href="@{/gift}" class="menu-link">
+		<i class="menu-bullet menu-bullet-dot">
+			<span></span>
+		</i>
+		<span class="menu-text">Quản lý Loại quà tặng</span>
+	</a>
+</li>
+2. MongoDB: Thêm quyền
+
+db.getCollection("gm_gift").update({ _id: "GIFT" },
+    {
+        $push: {
+            "sub_functions":
+                {
+                	"_id" : "SUB_GIFT",
+                	"description" : "Quản lý Gift",
+                	"authorities" : [
+                		{
+                			"_id" : "SUB_GIFT_LIST",
+                			"description" : "Xem danh sách"
+                		},
+                		{
+                			"_id" : "SUB_GIFT_DETAIL",
+                			"description" : "Xem chi tiết"
+                		},
+                		{
+                			"_id" : "SUB_GIFT_ADD",
+                			"description" : "Thêm mới"
+                		},
+                		{
+                			"_id" : "SUB_GIFT_EDIT",
+                			"description" : "Chỉnh sửa"
+                		},
+                		{
+                			"_id" : "SUB_GIFT_ACTIVE",
+                			"description" : "Khóa/Mở khóa"
+                		}
+                	],
+                	"href" : "gift"
+                }
+
+            }
+        }
+    )

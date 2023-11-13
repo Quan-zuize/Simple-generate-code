@@ -1,0 +1,91 @@
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+import vnpay.game.common.BEException;
+import vnpay.game.common.ResCode;
+#importObject("${name}Form")
+#importObject(${model})
+#importObject("${name}Repository")
+#importObject("${name}Service")
+import vnpay.game.utils.CriterialUtils;
+import vnpay.game.utils.WebUtil;
+import vnpay.game.utils.constant.GameConstant;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
+
+@Service
+public class ${name}ServiceImpl implements ${name}Service {
+
+    @Autowired
+    ${name}Repository ${nameLower}Repository;
+    @Autowired
+    MongoTemplate mongoTemplate;
+
+    @Override
+    public Page<${model}> search(${name}Form form, Pageable pageable) {
+        Query query = new Query();
+        if (!StringUtils.isEmpty(form.getName())) {
+            query.addCriteria(Criteria.where("name").regex(Pattern.compile(form.getName(), Pattern.CASE_INSENSITIVE)));
+        }
+        if (Objects.nonNull(form.getStatus())) {
+            query.addCriteria(Criteria.where("status").is(form.getStatus()));
+        }
+        query.addCriteria(CriterialUtils.criteriaRangeTime(form.getFromDate(), form.getToDate(), "created_at"));
+        long total = mongoTemplate.count(query, ${model}.class);
+        query.with(Sort.by(Sort.Direction.DESC, "created_at"));
+        List<${model}> list = mongoTemplate.find(query.with(pageable), ${model}.class);
+        return new PageImpl<>(list, pageable, total);
+    }
+
+    @Override
+    public ${model} findById(String id) {
+        return ${nameLower}Repository.findById(id).orElse(null);
+    }
+
+    @Override
+    public ${model} insert(${model} model) {
+        model.setStatus(GameConstant.STATUS_ACTIVE);
+        model.setCreatedAt(new Date());
+        model.setCreatedBy(WebUtil.getCurrentUsername());
+        return ${nameLower}Repository.save(model);
+    }
+
+    @Override
+    public ${model} update(${model} model) throws BEException {
+        ${model} oldModel = findById(model.getId());
+        if (Objects.isNull(oldModel)) throw new BEException(ResCode.GRADE_NOT_EXISTS);
+        oldModel.setName(model.getName());
+        oldModel.setModifiedAt(new Date());
+        oldModel.setModifiedBy(WebUtil.getCurrentUsername());
+        return ${nameLower}Repository.save(oldModel);
+    }
+
+    @Override
+    public List<${model}> getAll${name}Active() {
+        return ${nameLower}Repository.find${name}sByStatusOrderByName(GameConstant.STATUS_ACTIVE);
+    }
+
+    @Override
+    public String getName(String id) {
+        ${model} model = findById(id);
+        return Objects.nonNull(model) ? model.getName() : "";
+    }
+
+    @Override
+    public void changeStatus(String id, Integer status) throws BEException {
+        ${model} model = findById(id);
+        if (Objects.isNull(model)) throw new BEException(ResCode.GRADE_NOT_EXISTS);
+        model.setStatus(status);
+        ${nameLower}Repository.save(model);
+    }
+}

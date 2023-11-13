@@ -1,0 +1,109 @@
+const basePrototype = BaseController.prototype;
+let prototype = ${model}Controller.prototype};
+let formSelector = '#form-create'
+let id = document.querySelector(formSelector).querySelector("input[type='hidden']").value;
+
+function ${model}Controller() {
+    ${usd}(document).on('click', 'button.btn-confirm', function (e) {
+        e.preventDefault();
+        if (${usd}(formSelector).valid()) {
+            prototype.onclickBtnCreate();
+        }
+    });
+
+    ${usd}.validator.methods.verifyCode = function (value) {
+        return !/[^0-9]/.test(value);
+    };
+
+    ${usd}.validator.methods.verifyName = function (value) {
+        return !/[~`!@#${usd}%^&*()+={}<>.,/|-]/.test(value);
+    };
+
+    prototype.validateForm();
+
+    //Set maxlength
+    basePrototype.notInputLength(${usd}(`${usd}{formSelector} input[name='id']`), 50);
+
+    //Not include space character
+    basePrototype.notInputSpace(${usd}(`${usd}{formSelector} input[name='id']`));
+
+}
+
+prototype.validateForm = function () {
+    ${usd}(formSelector).validate({
+        focusInvalid: true,
+        ignore: [],
+        rules: {
+        #foreach($item in $fields)
+            ${item.fieldName}: {
+                required: true
+            }#if  ($foreach.index != $fields.size() - 1) , #end
+        #end
+        },
+        messages: {
+        #foreach($item in $fields)
+            ${item.fieldName}: {
+                required: "${item.formLabel} không được để trống. Vui lòng kiểm tra lại"
+            }#if  ($foreach.index != $fields.size() - 1) , #end
+        #end
+        }
+    });
+};
+
+prototype.onclickBtnCreate = function () {
+    var url = WebContext.contextPath;
+    const data = {
+    #foreach($item in $fields)
+        ${item.fieldName}: ${usd}('#${item.fieldName}').val().trim() #if  ($foreach.index != $fields.size() - 1) , #end
+    #end
+    }
+    if (id != null && id !== '') {
+        prototype.callApiUpdate(url, data);
+    } else {
+        url += 'create';
+        prototype.callApiCreate(url, data);
+    }
+};
+
+prototype.callApiCreate = function (url, formData) {
+    AjaxService.post(
+        url,
+        JSON.stringify(formData),
+        (data) => {
+            if (data.code === ResCode.SUCCESS) {
+                basePrototype.toastSuccess(message.CREATE_SUCCESS);
+                prototype.clearForm();
+            } else {
+                basePrototype.toastError(data.message);
+            }
+        }, (error) => {
+            console.log(error);
+        }
+    )
+};
+
+prototype.callApiUpdate = function (url, formData) {
+    AjaxService.post(
+        url,
+        JSON.stringify(formData),
+        (data) => {
+            if (data.code === ResCode.SUCCESS) {
+                basePrototype.toastSuccess(message.UPDATE_SUCCESS);
+            } else {
+                basePrototype.toastError(data.message);
+            }
+        }, (error) => {
+            console.log(error);
+        }
+    )
+};
+
+
+prototype.clearForm = () => {
+    ${usd}(formSelector)[0].reset();
+}
+
+var controller;
+${usd}(document).ready(function () {
+    controller = new ${model}Controller();
+});

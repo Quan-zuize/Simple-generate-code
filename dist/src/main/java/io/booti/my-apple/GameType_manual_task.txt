@@ -1,0 +1,55 @@
+1. Java: Thêm hằng số:
+- class: vnpay.game.common.ResCode
+- line:
+GAMETYPE_ALREADY_EXISTS("107", "Loại hình Game đã tồn tại, vui lòng kiểm tra lại"),
+GAMETYPE_NOT_EXISTS("108", "Loại hình Game không tồn tại, vui lòng kiểm tra lại")
+
+2. Menu
+- file: resources/common/fragment
+- content:
+<li th:class="'menu-item center ' + ${#strings.contains(#httpServletRequest.requestURI,'/game_type')? 'menu-item-active' : ''}"
+	sec:authorize="hasAuthority('SUB_GAMETYPE')">
+	<a th:href="@{/game_type}" class="menu-link">
+		<i class="menu-bullet menu-bullet-dot">
+			<span></span>
+		</i>
+		<span class="menu-text">Quản lý Loại hình Game</span>
+	</a>
+</li>
+2. MongoDB: Thêm quyền
+
+db.getCollection("game_type").update({ _id: "GAMETYPE" },
+    {
+        $push: {
+            "sub_functions":
+                {
+                	"_id" : "SUB_GAMETYPE",
+                	"description" : "Quản lý GameType",
+                	"authorities" : [
+                		{
+                			"_id" : "SUB_GAMETYPE_LIST",
+                			"description" : "Xem danh sách"
+                		},
+                		{
+                			"_id" : "SUB_GAMETYPE_DETAIL",
+                			"description" : "Xem chi tiết"
+                		},
+                		{
+                			"_id" : "SUB_GAMETYPE_ADD",
+                			"description" : "Thêm mới"
+                		},
+                		{
+                			"_id" : "SUB_GAMETYPE_EDIT",
+                			"description" : "Chỉnh sửa"
+                		},
+                		{
+                			"_id" : "SUB_GAMETYPE_ACTIVE",
+                			"description" : "Khóa/Mở khóa"
+                		}
+                	],
+                	"href" : "game_type"
+                }
+
+            }
+        }
+    )

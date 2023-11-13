@@ -1,0 +1,8 @@
+import org.springframework.data.mongodb.repository.MongoRepository;
+#importObject(${model})
+
+import java.util.List;
+
+public interface ${name}Repository extends MongoRepository<${model}, String> {
+    List<${model}> find${name}sByStatusOrderByName(Integer status);
+}

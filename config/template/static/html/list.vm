@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      layout:decorate="~{layouts/layout}" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý ${formName}</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-content">
+    <!--begin::Entry-->
+    <div class="d-flex flex-column-fluid">
+        <!--begin::Container-->
+        <div class="card-header-border"></div>
+        <div class="card card-custom example example-compact w-100" style="margin-right: 16px">
+            <!-- custom.breadcrumbs -->
+            <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 h5">
+                <li class="breadcrumb-item">
+                    <a class="text-dark" th:href="@{/}">
+                        <span class="txt">Trang chủ</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item text-muted breadcrumbs-item--active">
+                    <a class="text-dark-50" th:href="@{/${name_}}">
+                        <span class="txt">Quản lý ${formName}</span>
+                    </a>
+                </li>
+            </ul>
+            <!-- end custom.breadcrumbs -->
+            <!--begin::Dashboard-->
+            <div class="card-header">
+                <div class="row row-16 align-items-center flex-grow-1">
+                    <div class="col">
+                        <div class="card-title">Danh sách ${formName}</div>
+                    </div>
+                    <div class="col-auto btn-row">
+                        <!--<button class="btn btn-light-primary">
+                            <i class="ri-file-excel-2-line"></i>
+                            Xuất Excel
+                        </button>-->
+                        <a class="btn btn-primary" sec:authorize="hasAuthority('SUB_${name.toUpperCase()}_ADD')" th:href="@{/${name_}/create}">
+                            <i class="ri-add-fill"></i>
+                            Thêm mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-content no-footer">
+                    <div class="card-section-table">
+                        <form class="form form-search-user" th:object="${usd}{nameLower}Form}" th:action="@{/${name_}}" method="get">
+                            <div class="form search-form">
+                                <div class="row w-100 list-mb16 list-crop align-items-end justify-content-between">
+                                    #foreach($item in $fields)
+                                    <div class="col-12 col-lg-4">
+                                        <div class="form-group">
+                                            <label>${item.formLabel}</label>
+                                            #if(${item.formType.getValue()} == 'dropdown')
+                                            <select name="" th:field="*{${item.fieldName}}"
+                                                    class="form-control selectpicker">
+                                                #foreach( $key in ${item.additionKeys} )
+                                                    <option value="$key">${item.additionValues.get($foreach.index)}</option>
+                                                #end
+                                            </select>
+                                            #elseif(${item.formType.getValue()} == 'text')
+                                                <input type="text" th:field="*{${item.fieldName}}" placeholder="Nhập tên ${item.formLabel}"
+                                                       class="form-control" maxlength="255"
+                                                />
+                                            #else
+                                                <input type="text" th:field="*{${item.fieldName}}" placeholder="Nhập tên ${item.formLabel}"
+                                                       class="form-control" maxlength="255"
+                                                />
+                                            #end
+                                        </div>
+                                    </div>
+                                    #end
+                                    <div class="col-12 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Thời gian </label>
+                                            <input type="text" class="form-control datepicker datepicker-date" placeholder="dd/mm/yyyy - dd/mm/yyyy"
+                                                   th:field="*{timeSearch}"
+                                                   data-opens="left">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button class="btn btn-light-primary btn-sm" id="find-btn">
+                                            Tìm kiếm
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-section-table">
+                        <!-- tables.table -->
+                        <div class="table-wrap table-responsive-new">
+                            <div class="table-top">
+                                <div class="row align-items-center">
+                                    <div class="col font-18 font-weight-600">
+                                        Tổng số bản ghi:
+                                        <span class="font-18 font-weight-600 text-primary" th:text="${usd}{total}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--begin: Datatable-->
+                            <div class="table-wrap-inner">
+                                <table class="table table-sticky-ult table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th width="50" class="sort">STT</th>
+                                        #foreach($item in $fields)
+                                        <th>${item.formLabel}</th>
+                                        #end
+                                        <th>Thời gian tạo</th>
+                                        <th width="120">Trạng thái</th>
+                                        <th class="action-tools" width="130">Thao tác</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:if="${usd}{!${nameLower}s.isEmpty()}" th:each="${nameLower},iter : ${usd}{${nameLower}s}">
+                                        <td th:text="${usd}{(${nameLower}s.getSize() * ${nameLower}s.getNumber()) + iter.count}"></td>
+                                        #foreach($item in $fields)
+                                            <td th:text="${usd}{${nameLower}.get#upperFirst(${item.fieldName})()}"></td>
+                                        #end
+                                        <td th:text="${usd}{#dates.format(${nameLower}.getCreatedAt(), 'dd/MM/yyyy HH:mm:ss')}"></td>
+                                        <td>
+                                            <span class="label label-size-default label-light-success label-inline" th:if="${usd}{${nameLower}.getStatus() == 1}">Hoạt động</span>
+                                            <span class="label label-size-default label-light-danger label-inline" th:if="${usd}{${nameLower}.getStatus() == 0}">Khóa</span>
+                                        </td>
+                                        <td>
+                                            <div class="ult-wrap">
+                                                <input type="hidden" th:value="${usd}{${nameLower}.getId()}">
+                                                <a class="btn btn-transaprent btn-icon btn-sm"
+                                                   th:href="@{/${name_}/view/{id}(id = ${usd}{${nameLower}.getId()})}"
+                                                   sec:authorize="hasAuthority('SUB_${name.toUpperCase()}_DETAIL')"
+                                                   data-tooltip="tooltip" title="Xem chi tiết">
+                                                    <i class="ri-information-line"></i>
+                                                </a>
+                                                <a class="btn btn-transaprent btn-icon btn-sm"
+                                                   th:href="@{/${name_}/edit/{id}(id = ${usd}{${nameLower}.getId()})}"
+                                                   sec:authorize="hasAuthority('SUB_${name.toUpperCase()}_EDIT')"
+                                                   data-tooltip="tooltip" title="Cập nhật">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                <th:block sec:authorize="hasAuthority('SUB_${name.toUpperCase()}_ACTIVE')">
+                                                    <th:block th:if="${usd}{${nameLower}.getStatus() == 0}">
+                                                        <a class="btn btn-transaprent btn-icon btn-sm btn-unlock" data-toggle="modal" data-target="#modal_unlock"
+                                                           data-tooltip="tooltip" title="Mở khóa">
+                                                            <i class="ri-lock-unlock-line"></i>
+                                                        </a>
+                                                    </th:block>
+                                                    <th:block th:if="${usd}{${nameLower}.getStatus() == 1}">
+                                                        <a class="btn btn-transaprent btn-icon btn-sm btn-lock" data-toggle="modal" data-target="#modal_lock"
+                                                           data-tooltip="tooltip" title="Khóa">
+                                                            <i class="ri-lock-line"></i>
+                                                        </a>
+                                                    </th:block>
+                                                </th:block>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${usd}{${nameLower}s.isEmpty()}">
+                                        <td class="text-center" colspan="8">Không có dữ liệu thỏa mãn điều kiện tìm kiếm</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!--end: Datatable-->
+                            <div class="record-and-pagination">
+                                <div class="row align-items-center list-mb16 list-crop justify-content-between margin-clear">
+                                    <div class="col-md-auto record-left">
+                                        <!-- tables.record -->
+                                        <div class="record-number">
+                                            <div class="row row-8 align-items-center">
+                                                <div>
+                                                    Hiển thị
+                                                </div>
+                                                <div>
+                                                    <div>
+                                                        <div class="form-group">
+                                                            <label id="custom-selector" sd:page-size-selector="default" ></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    bản ghi
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- tables.record -->
+                                    </div>
+                                    <div class="col-md-auto">
+                                        <!-- tables.pagination -->
+                                        <div class="dataTables_paginate paging_simple_numbers">
+                                            <ul class="pagination" sd:pagination="full"
+                                                sd:pagination-url="@{${usd}{url}}"></ul>
+                                        </div>
+                                        <!-- tables.pagination -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end tables.table -->
+                    </div>
+                </div>
+            </div>
+            <!--end::Dashboard-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::Entry-->
+</th:block>
+
+<th:block layout:fragment="page-modal">
+    <th:block th:replace="pages/common/lock_modal :: modal_lock"></th:block>
+
+    <th:block th:replace="pages/common/unlock_modal :: modal_unlock"></th:block>
+
+    <!--    -->
+</th:block>
+<th:block layout:fragment="js-on-this-page">
+    <script th:src="@{/js/${subFolder}/${name_}/${name_}_list.js}"></script>
+</th:block>
+</body>
+</html>

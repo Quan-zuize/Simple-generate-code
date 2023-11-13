@@ -1,0 +1,58 @@
+let prototype = ${name}Controller.prototype;
+let basePrototype = BaseController.prototype;
+const lockElement = ${usd}("#modal_lock #element_lock_id");
+const unlockElement = ${usd}("#modal_unlock #element_unlock_id");
+const contentLockElement = document.getElementById('content_lock');
+const contentUnlockElement = document.getElementById('content_unlock');
+
+function ${name}Controller() {
+    basePrototype.paginateInit();
+    basePrototype.initDateTime();
+
+    ${usd}("#modal_lock .btn-confirm").on('click', () => {
+        let id = lockElement.val();
+        prototype.callApiChangeStatus(`${name_}/lock/${id}`);
+    })
+
+    ${usd}("#modal_unlock .btn-confirm").on('click', () => {
+        let id = unlockElement.val();
+        prototype.callApiChangeStatus(`${name_}/unlock/${id}`);
+    })
+
+    ${usd}(document).on('click', 'a.btn-lock', function (e) {
+        const id = ${usd}(this).parent().find("input[type='hidden']").val();
+        lockElement.val(id);
+    })
+
+    ${usd}(document).on('click', 'a.btn-unlock', function (e) {
+        const id = ${usd}(this).parent().find("input[type='hidden']").val();
+        unlockElement.val(id);
+    })
+
+    //Only input number
+    basePrototype.onlyInputNumber(${usd}("#id"));
+    basePrototype.inputAlphanumericAndUnderscore(${usd}("#${name_}Name"));
+
+}
+
+prototype.callApiChangeStatus = function (url) {
+    AjaxService.post(
+        url,
+        null,
+        (data) => {
+            if (data.code === ResCode.SUCCESS) {
+                basePrototype.toastSuccess(message.UPDATE_STATUS_SUCCESS);
+                location.reload();
+            } else {
+                basePrototype.toastError(data.message);
+            }
+        }, (error) => {
+            console.log(error);
+        }
+    )
+};
+
+var controller;
+${usd}(document).ready(function () {
+    controller = new ${name}Controller();
+});

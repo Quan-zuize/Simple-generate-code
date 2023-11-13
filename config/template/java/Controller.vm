@@ -1,0 +1,191 @@
+import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import vnpay.game.common.BEException;
+import vnpay.game.common.CommonResult;
+import vnpay.game.common.ResCode;
+import vnpay.game.model.be.SAAudit;
+#importObject("${name}Form")
+#importObject(${model})
+#importObject("${name}Service")
+import vnpay.game.services.FunctionService;
+import vnpay.game.utils.WebUtil;
+import vnpay.game.utils.auditQueue.AuditProducer;
+import vnpay.game.utils.constant.GameConstant;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
+
+
+@Controller
+@RequestMapping("/${name_}")
+public class ${name}Controller {
+
+    private static final Logger logger = LoggerFactory.getLogger(${name}Controller.class);
+    private final String PATH_URL = "pages/${subFolder}/${nameLower}/";
+    private static final String TABLE_NAME = "${table}";
+    private static final Gson gson = new Gson();
+
+    @Autowired
+    AuditProducer auditProducer;
+
+    @Autowired
+    ${name}Service ${nameLower}Service;
+
+    @Autowired
+    FunctionService functionService;
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_LIST')")
+    @GetMapping
+    public String list(Model model,
+                       @ModelAttribute("${nameLower}Form") ${name}Form ${nameLower}Form,
+                       @PageableDefault(size = 10) Pageable pageable,
+                       HttpServletRequest request) {
+        Page<${model}> ${nameLower}s = ${nameLower}Service.search(${nameLower}Form, pageable);
+        model.addAttribute("url", WebUtil.buildUrlForPaging(request, "/${nameLower}"));
+        model.addAttribute("${nameLower}s", ${nameLower}s);
+        model.addAttribute("total", ${nameLower}s.getTotalElements());
+        return PATH_URL + "list";
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_ADD')")
+    @GetMapping("/create")
+    public String add(Model model, @ModelAttribute("${nameLower}Form") ${name}Form ${nameLower}Form) {
+        model.addAttribute("functions", functionService.findAll());
+        return PATH_URL + "create_update";
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_ADD')")
+    @PostMapping("/create")
+    @ResponseBody
+    public CommonResult create(@RequestBody ${name}Form ${nameLower}Form, HttpServletRequest request) {
+        try {
+            logger.info("Create new ${nameLower}: {}", ${nameLower}Form.getId());
+            ${model} ${nameLower} = ${nameLower}Service.findById(${nameLower}Form.getId());
+            if (Objects.nonNull(${nameLower})) throw new BEException(ResCode.${name.toUpperCase()}_ALREADY_EXISTS);
+            logger.debug("Insert new ${nameLower} to db: {}", ${nameLower}Form.getId());
+            ${nameLower} = ${nameLower}Service.insert(${nameLower}Form.to${name}());
+            logger.debug("Insert new ${nameLower} successful");
+
+            //audit information
+            SAAudit audit = new SAAudit(request, "Thêm mới ${formName}: " + ${nameLower}Form.getId(),
+                    GameConstant.TYPE_ADD, TABLE_NAME, "", gson.toJson(${nameLower}));
+            auditProducer.send(audit);
+            //audit end
+        } catch (BEException e) {
+            logger.error("Error while create new ${nameLower}: {}", e.getMessage());
+            return CommonResult.fail(e);
+        } catch (Exception e) {
+            logger.error("Internal error while create new ${nameLower}: {}", e.getMessage());
+            return CommonResult.serverError();
+        }
+        return CommonResult.success();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_EDIT')")
+    @GetMapping("/edit/{id}")
+    public String edit(Model model,
+                       @PathVariable("id") String id
+    ) {
+        logger.info("Edit the ${nameLower}: {}", id);
+        ${model} ${nameLower} = ${nameLower}Service.findById(id);
+        ${name}Form ${nameLower}Form = Objects.isNull(${nameLower}) ? new ${name}Form() : ${name}Form.from${name}(${nameLower});
+        model.addAttribute("functions", functionService.findAll());
+        model.addAttribute("${nameLower}Form", ${nameLower}Form);
+        return PATH_URL + "create_update";
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_EDIT')")
+    @PostMapping("/edit/{id}")
+    @ResponseBody
+    public CommonResult edit(@PathVariable("id") String id,
+                             @RequestBody ${name}Form ${nameLower}Form,
+                             HttpServletRequest request) {
+        try {
+            logger.info("Update ${nameLower}: {}", id);
+            ${nameLower}Form.setId(id);
+            ${model} ${nameLower} = ${nameLower}Service.update(${nameLower}Form.to${name}());
+            logger.info("Update ${nameLower} successful!: {}", ${nameLower}Form.getId());
+
+            //audit information
+            SAAudit audit = new SAAudit(request, "Chỉnh sửa ${formName}: " + ${nameLower}Form.getId(),
+                    GameConstant.TYPE_EDIT, TABLE_NAME, "", gson.toJson(${nameLower}));
+            auditProducer.send(audit);
+            //audit end
+        } catch (BEException e) {
+            logger.info("Error while update ${nameLower}: {}, e: {}", ${nameLower}Form.getId(), e.getMessage());
+            return CommonResult.fail(e);
+        } catch (Exception e) {
+            logger.info("Internal error while update ${nameLower}: {}", e.getMessage());
+            return CommonResult.serverError();
+        }
+        return CommonResult.success();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_DETAIL')")
+    @GetMapping("/view/{id}")
+    public String view(Model model, @PathVariable("id") String id) {
+        logger.info("View the ${nameLower}: {}", id);
+        ${model} ${nameLower} = ${nameLower}Service.findById(id);
+        ${name}Form ${nameLower}Form = Objects.isNull(${nameLower}) ? new ${name}Form() : vnpay.game.dto.${name}Form.from${name}(${nameLower});
+        model.addAttribute("functions", functionService.findAll());
+        model.addAttribute("${nameLower}Form", ${nameLower}Form);
+        return PATH_URL + "detail";
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_ACTIVE')")
+    @PostMapping("/lock/{id}")
+    @ResponseBody
+    public CommonResult lockRole(@PathVariable("id") String id, HttpServletRequest request) {
+        try {
+            logger.info("Lock ${nameLower}: {}", id);
+            ${nameLower}Service.changeStatus(id, GameConstant.STATUS_LOCKED);
+            logger.info("Lock ${nameLower}: {} successful", id);
+
+            //audit information
+            SAAudit audit = new SAAudit(request, "Khóa ${formName}: " + id,
+                    GameConstant.TYPE_LOCK, TABLE_NAME, GameConstant.STATUS + GameConstant.STATUS_ACTIVE, GameConstant.STATUS + GameConstant.STATUS_LOCKED);
+            auditProducer.send(audit);
+            //audit end
+        } catch (BEException e) {
+            logger.info("Error while lock ${nameLower}: {}, e: {}", id, e.getMessage());
+            return CommonResult.fail(e);
+        } catch (Exception e) {
+            logger.info("Internal error while lock ${name.toUpperCase()}: {}", e.getMessage());
+            return CommonResult.serverError();
+        }
+        return CommonResult.success();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SUB_${name.toUpperCase()}_ACTIVE')")
+    @PostMapping("/unlock/{id}")
+    @ResponseBody
+    public CommonResult unlock(@PathVariable("id") String id, HttpServletRequest request) {
+        try {
+            logger.info("Unlock ${nameLower}: {}", id);
+            ${nameLower}Service.changeStatus(id, GameConstant.STATUS_ACTIVE);
+            logger.info("Unlock ${nameLower}: {} successful", id);
+
+            //audit information
+            SAAudit audit = new SAAudit(request, "Mở khóa ${formName}: " + id,
+                    GameConstant.TYPE_UNLOCK, TABLE_NAME, GameConstant.STATUS + GameConstant.STATUS_LOCKED, GameConstant.STATUS + GameConstant.STATUS_ACTIVE);
+            auditProducer.send(audit);
+            //audit end
+        } catch (BEException e) {
+            logger.info("Error while unlock ${nameLower}: {}, e: {}", id, e.getMessage());
+            return CommonResult.fail(e);
+        } catch (Exception e) {
+            logger.info("Internal error while unlock ${nameLower}: {}", e.getMessage());
+            return CommonResult.serverError();
+        }
+        return CommonResult.success();
+    }
+}

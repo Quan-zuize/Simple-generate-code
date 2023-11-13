@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin ${formName}</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-content">
+    <!--begin::Entry-->
+    <div class="d-flex flex-column-fluid">
+        <!--begin::Container-->
+        <div class="card-header-border"></div>
+        <div class="card card-custom example example-compact w-100" style="margin-right: 16px">
+            <!-- custom.breadcrumbs -->
+            <ul class="breadcrumb breadcrumb-transparent breadcrumb-dot font-weight-bold p-0 h5">
+                <li class="breadcrumb-item">
+                    <a class="text-dark" th:href="@{/}">
+                        <span class="txt">Trang chủ</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item text-muted breadcrumbs-item--active">
+                    <a class="text-dark-50" th:href="@{/${name_}}">
+                        <span class="txt">Quản lý ${formName}</span>
+                    </a>
+                </li>
+            </ul>
+            <!-- end custom.breadcrumbs -->
+            <!--begin::Dashboard-->
+            <div class="card-header">
+                <div class="row row-16 align-items-center flex-grow-1">
+                    <div class="col">
+                        <div class="card-title">Thông tin chung</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-content sub-page">
+                    <div class="card-section mb-20">
+                        <div class="row">
+                            <form id="form-create" th:object="${bankForm}" method="post" class="col-12">
+                                <input type="hidden" th:value="${bankForm.id}">
+                                <div class="col-12 col-md-12">
+                                    <div class="row list-mb16 list-crop">
+                                    #foreach($item in $fields)
+                                        #if ($foreach.index % 2 == 0)
+                                        <div class="offset-xl-1 col-xl-5 col-sm-6 list-mb24 list-crop">
+                                        #end
+                                        <div class="form-group">
+                                            <label>
+                                                ${item.formLabel} <span class="text-danger">*</span>
+                                            </label>
+                                            #if(${item.isId})
+                                            <input type="text" th:field="*{${item.fieldName}}" class="form-control" th:disabled="${usb}{${nameLower}Form.id} != null}"/>
+                                            #else
+                                            <input type="text" th:field="*{${item.fieldName}}" class="form-control"/>
+                                            #end
+                                        </div>
+                                        #if ($foreach.index % 2 == 1 || $foreach.index == $fields.size() - 1)
+                                        </div>
+                                        #end
+                                    #end
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row row-16 justify-content-end">
+                        <div class="col-auto">
+                            <a class="btn btn-secondary" th:href="@{/bank}">
+                                Quay lại
+                            </a>
+                        </div>
+                        <div class="col-auto">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <button class="btn btn-primary btn-generate">Auto generate key</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary btn-confirm">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Dashboard-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::Entry-->
+</th:block>
+
+<th:block layout:fragment="js-on-this-page">
+    <script th:src="@{/js/${subFolder}/${name_}/${name_}.js}"></script>
+</th:block>
+</body>
+</html>

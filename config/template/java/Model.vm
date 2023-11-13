@@ -1,0 +1,40 @@
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.*;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import java.util.Date;
+
+@Document(collection = "${table}")
+@Getter
+@Setter
+public class ${model} {
+    #foreach($item in $fields)
+
+    #if( $isId )
+    @ID
+    #end
+    @Field(value = "${item.dbField}")
+    private ${item.javaType.getValue()} ${item.fieldName};
+    #end
+
+    #if( $generateDate )
+    @Field(value = "created_by")
+    @CreatedBy
+    private String createdBy;
+
+    @Field(value = "created_at")
+    @CreatedDate
+    private Date createdAt;
+
+    @Field(value = "modified_at")
+    @LastModifiedDate
+    private Date modifiedAt;
+
+    @Field(value = "modified_by")
+    @LastModifiedBy
+    private String modifiedBy;
+    #end
+
+}

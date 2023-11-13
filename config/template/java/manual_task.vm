@@ -1,0 +1,55 @@
+1. Java: Thêm hằng số:
+- class: vnpay.game.common.ResCode
+- line:
+${nameUpper}_ALREADY_EXISTS("107", "${formName} đã tồn tại, vui lòng kiểm tra lại"),
+${nameUpper}_NOT_EXISTS("108", "${formName} không tồn tại, vui lòng kiểm tra lại")
+
+2. Menu
+- file: resources/common/fragment
+- content:
+<li th:class="'menu-item center ' + ${usd}{#strings.contains(#httpServletRequest.requestURI,'/${name_}')? 'menu-item-active' : ''}"
+	sec:authorize="hasAuthority('SUB_${nameUpper}')">
+	<a th:href="@{/${name_}}" class="menu-link">
+		<i class="menu-bullet menu-bullet-dot">
+			<span></span>
+		</i>
+		<span class="menu-text">Quản lý ${formName}</span>
+	</a>
+</li>
+2. MongoDB: Thêm quyền
+
+db.getCollection("${table}").update({ _id: "${nameUpper}" },
+    {
+        $push: {
+            "sub_functions":
+                {
+                	"_id" : "SUB_${nameUpper}",
+                	"description" : "Quản lý ${name}",
+                	"authorities" : [
+                		{
+                			"_id" : "SUB_${nameUpper}_LIST",
+                			"description" : "Xem danh sách"
+                		},
+                		{
+                			"_id" : "SUB_${nameUpper}_DETAIL",
+                			"description" : "Xem chi tiết"
+                		},
+                		{
+                			"_id" : "SUB_${nameUpper}_ADD",
+                			"description" : "Thêm mới"
+                		},
+                		{
+                			"_id" : "SUB_${nameUpper}_EDIT",
+                			"description" : "Chỉnh sửa"
+                		},
+                		{
+                			"_id" : "SUB_${nameUpper}_ACTIVE",
+                			"description" : "Khóa/Mở khóa"
+                		}
+                	],
+                	"href" : "${name_}"
+                }
+
+            }
+        }
+    )

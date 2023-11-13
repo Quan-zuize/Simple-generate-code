@@ -1,0 +1,23 @@
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import vnpay.game.common.BEException;
+#importObject("${name}Form")
+#importObject(${model})
+import java.util.List;
+
+public interface ${name}Service {
+
+    Page<${model}> search(${name}Form form, Pageable pageable);
+
+    ${model} findById(String id);
+
+    ${model} insert(${model} model);
+
+    ${model} update(${model} model) throws BEException;
+
+    void changeStatus(String id, Integer status) throws BEException;
+
+    List<${model}> getAll${name}Active();
+
+    String getName(String id);
+}
